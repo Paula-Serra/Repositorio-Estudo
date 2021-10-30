@@ -6,10 +6,16 @@ public class Movimentar : MonoBehaviour
 {
     public Vector2 direcao;
 
-    public float velocidade;
 
-   private void Update()
+    private Jogo jogoScript;
+
+    private void Start()
     {
-        transform.Translate(direcao * velocidade * Time.deltaTime);
+        jogoScript = GameObject.Find("Jogo").GetComponent<Jogo>();
+    }
+
+    private void Update()
+    {
+        transform.Translate(direcao * jogoScript.velocidade * Time.deltaTime);
     }
 }
