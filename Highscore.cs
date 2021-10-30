@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class jogador : MonoBehaviour
@@ -16,7 +15,7 @@ public class jogador : MonoBehaviour
 
     private bool estaNoChao;
 
-    private float pontos;
+    public float pontos;
 
     private float highscore;
 
@@ -28,38 +27,57 @@ public class jogador : MonoBehaviour
 
     public Animator animatorComponent;
 
+    public AudioSource pularAudioSource;
+
+    public AudioSource cemPontosAudioSource;
+
+    public AudioSource fimDeJogoAudioSource;
+
+    public GameObject reiniciarButton;
+
+
     private void Start()
     {
         highscore = PlayerPrefs.GetFloat("HIGHSCORE");
 
-        highscoreText.text = $"Highscore: {Mathf.FloorToInt(highscore)}";
+        highscoreText.text = $"HI {Mathf.FloorToInt(highscore)}";
     }
 
-           void Update()
+    void Update()
     {
         pontos += Time.deltaTime * multiplicadorPontos;
 
-        pontosText.text = $"Pontos: {Mathf.FloorToInt(pontos)}";
+        var pontosArredondado = Mathf.FloorToInt(pontos);
+        pontosText.text = pontosArredondado.ToString();
 
-       if (Input.GetKeyDown(KeyCode.UpArrow))
-       {
-           Pular();
-       }
-        if ( Input.GetKeyDown(KeyCode.DownArrow))
+        if (pontosArredondado > 0
+            && pontosArredondado % 100 == 0
+            && !cemPontosAudioSource.isPlaying)
+        {
+            cemPontosAudioSource.Play();
+        }
+
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            Pular();
+        }
+        if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             Abaixar();
         }
-       else if ( Input.GetKeyUp(KeyCode.DownArrow))
-       {
-           Levantar();
-       }
+        else if (Input.GetKeyUp(KeyCode.DownArrow))
+        {
+            Levantar();
+        }
     }
 
-        void Pular()
+    void Pular()
     {
         if (estaNoChao)
         {
             rb.AddForce(Vector2.up * forcaPulo);
+
+            pularAudioSource.Play();
         }
     }
 
@@ -72,22 +90,28 @@ public class jogador : MonoBehaviour
         animatorComponent.SetBool("Abaixado", false);
     }
 
-     private void FixedUpdate()
-     {
+    private void FixedUpdate()
+    {
         estaNoChao = Physics2D.Raycast(transform.position, Vector2.down, distanciaMinimaChao, layerChao);
     }
     private void OnCollisionEnter2D(Collision2D other)
     {
         if (other.gameObject.CompareTag("Inimigo"))
         {
-            if(pontos > highscore)
+            if (pontos > highscore)
             {
                 highscore = pontos;
 
-                PlayerPrefs.SetFloat("HIGHSCORE",highscore);
+                PlayerPrefs.SetFloat("HIGHSCORE", highscore);
             }
 
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+
+            fimDeJogoAudioSource.Play();
+
+            reiniciarButton.SetActive(true);
+
+            Time.timeScale = 0;
+
         }
     }
 }
